@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "id": "1",
+      "image": "https://solindograpika.com/data/foto_berita/biskuit-kelapa-roma-01.png",
+      "name": "Biskuit",
+      "price": 6000,
+      "stock": 10
+    },
+    {
+      "id": "2",
+      "image": "https://static.wikia.nocookie.net/logosfake/images/a/a1/Untitled.png/revision/latest?cb=20160225113848",
+      "name": "Oreo",
+      "price": 10000,
+      "stock": 10
+    },
+    {
+      "id": "3",
+      "image": "https://d2bzx2vuetkzse.cloudfront.net/fit-in/0x450/unshoppable_producs/9fae1c28-1f9b-4b23-943e-9c079238d79b.png",
+      "name": "Chips",
+      "price": 8000,
+      "stock": 10
+    },
+    {
+      "id": "4",
+      "image": "https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//96/MTA-3962454/tango_tango_coklat_78_gr_biscuit_-_wafer_________________full02.jpg",
+      "name": "Tango",
+      "price": 12000,
+      "stock": 10
+    },
+    {
+      "id": "5",
+      "image": "https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//95/MTA-3528266/silverqueen_silverqueen-box-cashew-cokelat--33-g-_full02.jpg",
+      "name": "Cokelat",
+      "price": 15000,
+      "stock": 10
+    }
+  ]
+}

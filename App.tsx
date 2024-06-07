@@ -1,117 +1,204 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  Button,
+  Image,
+  StyleSheet,
+  Alert,
+  FlatList,
 } from 'react-native';
+import axios from 'axios';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const API_URL = 'http://192.168.1.10:3000';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+interface Item {
+  id: number;
+  image: string;
+  name: string;
+  price: number;
+  stock: number;
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const App = () => {
+  const [items, setItems] = useState<Item[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/items`);
+      setItems(response.data);
+    } catch (error) {
+      console.error('Error fetching items:', error);
+    }
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+  const handlePurchase = async () => {
+    if (!selectedItem) return;
+
+    if (selectedItem.stock === 0) {
+      Alert.alert('Stock Habis');
+      return;
+    }
+
+    if (balance < selectedItem.price) {
+      Alert.alert('Uang Tidak Cukup');
+      return;
+    }
+
+    try {
+      const newBalance = balance - selectedItem.price;
+      setBalance(newBalance);
+
+      const updatedItem = {...selectedItem, stock: selectedItem.stock - 1};
+      await axios.put(`${API_URL}/items/${selectedItem.id}`, updatedItem);
+
+      Alert.alert(
+        'Pembelian Berhasil',
+        '',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              if (newBalance > 0) {
+                Alert.alert(`Uang Anda Kembali ${newBalance}`);
+                setBalance(0);
+              }
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+      fetchItems();
+    } catch (error) {
+      console.error('Pembelian Gagal:', error);
+      Alert.alert('Pembelian Gagal');
+    }
+  };
+
+  const handleSelectItem = (item: Item) => {
+    setSelectedItem(item);
+  };
+
+  const handleAddBalance = (amount: number) => {
+    setBalance(balance + amount);
+    Alert.alert(`Berhasil Menerima Uang Sebesar ${amount}`);
+  };
+
+  const renderItem = ({item}: {item: Item}) => (
+    <View style={styles.itemContainer}>
+      <Image
+        source={{uri: item.image}}
+        style={styles.image}
+        resizeMode="contain"
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Text style={styles.text}>{item.name}</Text>
+      <Text style={styles.text}>Price: {item.price}</Text>
+      <Text style={styles.text}>Stock: {item.stock}</Text>
+      <Button
+        title="Select"
+        onPress={() => handleSelectItem(item)}
+        color={'green'}
+      />
+    </View>
   );
-}
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Balance: {balance}</Text>
+      <FlatList
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        horizontal
+      />
+      <Text style={styles.text}>Pilih Uang Pecahan : </Text>
+      <View style={styles.buttonsContainer}>
+        <View style={styles.buttons}>
+          <Button
+            color={'red'}
+            title="2000"
+            onPress={() => handleAddBalance(2000)}
+          />
+        </View>
+        <View style={styles.buttons}>
+          <Button
+            color={'red'}
+            title="5000"
+            onPress={() => handleAddBalance(5000)}
+          />
+        </View>
+        <View style={styles.buttons}>
+          <Button
+            color={'red'}
+            title="10000"
+            onPress={() => handleAddBalance(10000)}
+          />
+        </View>
+        <View style={styles.buttons}>
+          <Button
+            color={'red'}
+            title="20000"
+            onPress={() => handleAddBalance(20000)}
+          />
+        </View>
+        <View style={styles.buttons}>
+          <Button
+            color={'red'}
+            title="50000"
+            onPress={() => handleAddBalance(50000)}
+          />
+        </View>
+      </View>
+
+      <Button
+        title="Purchase"
+        onPress={handlePurchase}
+        disabled={!selectedItem}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  itemContainer: {
+    marginBottom: 20,
+    marginRight: 10,
+    marginLeft: 10,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  image: {
+    width: 300,
+    height: 300,
+    marginBottom: 10,
+    backgroundColor: 'white',
   },
-  highlight: {
-    fontWeight: '700',
+  text: {
+    textAlign: 'center',
+    fontSize: 20,
+    marginBottom: 10,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  buttons: {
+    margin: 5,
+    width: 60,
   },
 });
 
